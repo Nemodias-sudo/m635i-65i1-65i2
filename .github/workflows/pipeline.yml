@@ -6,93 +6,59 @@ on:
 
 jobs:
 
-  # =========================
-  # CI: Validation & Security
-  # =========================
   ci_security:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Validate project structure
         run: |
-          echo "Checking required folder..."
           if [ ! -d "anvar_a" ]; then
-            echo "âŒ Required folder missing!"
+            echo "Folder missing!"
             exit 1
           fi
-          echo "âœ… Structure OK"
+          echo "Structure OK"
 
-      - name: Scan for secrets (strict)
+      - name: Scan for secrets
         run: |
-          echo "í´ Scanning for secrets..."
           if grep -r -iE "password|api_key|token" .; then
-            echo "âŒ SECURITY ISSUE: Sensitive data detected!"
+            echo "Sensitive data found!"
             exit 1
           else
-            echo "âœ… No secrets found"
+            echo "No secrets found"
           fi
 
-  # =========================
-  # Advanced Security Scan
-  # =========================
-  vulnerability_scan:
+  security_scan:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Run Trivy scan
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: fs
-          severity: HIGH,CRITICAL
 
-  # =========================
-  # Compliance / Audit Report
-  # =========================
-  audit_report:
-    runs-on: ubuntu-latest
-    needs: [ci_security, vulnerability_scan]
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Generate audit report
-        run: |
-          mkdir -p reports
-          echo "BANK SECURITY AUDIT REPORT" > reports/report.txt
-          echo "All checks passed successfully" >> reports/report.txt
-          echo "No critical vulnerabilities found" >> reports/report.txt
-
-      - name: Upload audit report
-        uses: actions/upload-artifact@v4
-        with:
-          name: audit-report
-          path: reports/
-
-  # =========================
-  # CD: Secure Deployment
-  # =========================
   deploy:
     runs-on: ubuntu-latest
-    needs: [audit_report]
+    needs: [ci_security, security_scan]
 
     if: github.event_name == 'push'
 
-    environment: production   # í´¥ real DevSecOps concept
-
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Simulate secure deployment
+      - name: Simulate deployment
         run: |
           mkdir dist
-          echo "Secure Banking App Deployment Successful" > dist/output.txt
+          echo "Deployment successful" > dist/output.txt
 
-      - name: Upload deployment artifact
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: production-build
+          name: build
           path: dist/
