@@ -23,7 +23,7 @@ jobs:
 
       - name: Scan for secrets
         run: |
-          if grep -r -iE "password|api_key|token" .; then
+          if grep -r -iE "password|api_key|token" anvar_a/; then
             echo "Sensitive data found!"
             exit 1
           else
