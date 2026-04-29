@@ -14,7 +14,7 @@ jobs:
 
       - name: Check folder
         run: |
-          if [ ! -d "anvar-abbas" ]; then
+          if [ ! -d "anvar_a" ]; then
             echo "Folder missing!"
             exit 1
           fi
